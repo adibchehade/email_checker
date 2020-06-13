@@ -1,16 +1,11 @@
-import urllib
-import time
 import json
-from request_mods import add_request_headers
+import urllib
 
 
 def get_session_id(req):
     response = [None]
     web_id = request_www_westernunion_com(req, response)
     return web_id
-    # if(request_www_westernunion_com(response)):
-    #     response[0].close()
-
 
 def request_www_westernunion_com(req, response):
     response[0] = None
