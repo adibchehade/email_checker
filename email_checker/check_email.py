@@ -111,8 +111,8 @@ def request_www_westernunion_com(prepared_requests, emails):
 def worker():
     while True:
         with lock:
-            requests, emails = workers_data.get()
-        if not requests or not emails:
+            data = workers_data.get()
+        if not data:
             break
         log.info('{} has: {} requests, {} emails'.format(current_thread().name, len(requests), len(emails)))
         request_www_westernunion_com(requests, emails)
