@@ -70,7 +70,7 @@ def request_www_westernunion_com(emails):
                         fp.write(email)
                 
                 # Email IS registered
-                elif "There's already an account with this email address":
+                elif "There's already an account with this email address" in msg:
                     log.info('Registered: {}'.format(email))
                     with open('data/registered_emails.txt', 'a') as fp:
                         fp.write(email)
@@ -78,12 +78,12 @@ def request_www_westernunion_com(emails):
                 # Other message
                 else:
                     log.info(msg)
-                    with open('data/failed_emails.txt', 'a') as fp:
-                        fp.write(email)
             
             # No data received in response
             else:
                 log.info('Status: {}, Message: {}, Data: {}'.format(response.status, response.msg, data))
+                with open('data/failed_emails.txt', 'a') as fp:
+                    fp.write(email)
 
         except urllib.error.URLError as e:
             if not hasattr(e, "code"):
