@@ -5,7 +5,8 @@ __pycache__/
 
 
 # Some project files
-email_checker/data
+sample_data/
+email_checker/data/
 .ipynb_checkpoints
 .vscode
 *.ipynb
