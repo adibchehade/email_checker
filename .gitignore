@@ -3,6 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+# Some project files
+.ipynb_checkpoints
+.vscode
+*.ipynb
+*.saz
+*.log
+
+
 # C extensions
 *.so
 
