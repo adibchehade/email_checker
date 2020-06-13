@@ -6,7 +6,7 @@ from request_mods import add_request_headers
 
 def make_requests():
     session_id = get_session_id()
-    emails = open('emails','r').readlines()
+    emails = open('data/emails','r').readlines()
     
     # emails = [
     #     'nilavghosh@gmail.com',

@@ -16,7 +16,7 @@ def get_random_session_request():
     return req, session_id
 
 def create_session_requests():
-    with open('parameters.txt', 'r') as param_file:
+    with open('data/parameters.txt', 'r') as param_file:
         params = param_file.readlines()
     param_sets = []
     param_set = []

@@ -77,7 +77,7 @@ for header, value in event['params']['headers'].items():
     if not header.startswith(':'):
         headers.append('req.add_header("{}", "{}"){}'.format(header, value, os.linesep))
 
-with open('parameters.txt', 'w') as fp:
+with open('data/parameters.txt', 'w') as fp:
     fp.writelines(headers)
 
 # print(events)
