@@ -115,6 +115,7 @@ def worker():
         if not data:
             break
         log.info('{} has: {} requests, {} emails'.format(current_thread().name, len(requests), len(emails)))
+        requests, emails = data
         request_www_westernunion_com(requests, emails)
         # workers_data.task_done()
         # time.sleep(1)
