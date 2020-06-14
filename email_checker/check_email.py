@@ -114,8 +114,8 @@ def request_www_westernunion_com(prepared_requests, emails, proxies=[]):
                 
                 # No data received in response
                 else:
-                    log.info('{}: Status: {}, Message: {}, Data: {}'.format(
-                        worker_name, response.status, response.msg, data)
+                    log.info('{}: Status: {}, Message: {}, Data: {} ({})'.format(
+                        worker_name, response.status, response.msg, data, email)
                     )
                     with open('data/failed_emails.txt', 'a') as fp:
                         fp.write(email)
