@@ -1,29 +1,39 @@
 import json
 import queue
 import urllib
+import logging
 import argparse
 from threading import Thread, Lock, current_thread
 
 from logger import log
 from utils import random_delay, get_random_proxies_for_session
-from random_requests import RANDOM_REQUESTS
+from random_requests import create_session_requests
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-w', '--workers', type=int, default=4, help="Number of workers to be used")
+parser.add_argument('--no-proxies', action='store_false', help="Flag to use proxies or not")
 
 args = parser.parse_args()
 
 NUMBER_OF_WORKERS = args.workers
+USE_PROXIES = args.no_proxies
+
+log.info('PROXIES: {}\n'.format('YES' if USE_PROXIES else 'NO'))
 
 workers_data = queue.Queue()
 lock = Lock()
 
+RANDOM_REQUESTS = create_session_requests(USE_PROXIES)
+
+
 def make_requests():
     global workers_data
-    emails = open('data/emails.txt','r').readlines()
+    emails = open('data/emails.txt','r').read().splitlines()
     # Get a proxy for each email
-    proxies = get_random_proxies_for_session(len(emails))
+    proxies = []
+    if USE_PROXIES:
+        proxies = get_random_proxies_for_session(len(emails))
 
     emails_per_workers = int(len(emails) / NUMBER_OF_WORKERS) + bool(len(emails) % NUMBER_OF_WORKERS)
     headers_per_workers = int(len(RANDOM_REQUESTS) / NUMBER_OF_WORKERS) + bool(len(RANDOM_REQUESTS) % NUMBER_OF_WORKERS)
@@ -73,9 +83,12 @@ def request_www_westernunion_com(prepared_requests, emails, proxies=[]):
 
                 random_delay(1, 2)
 
+                # Add the proxy and send the request
                 if proxies:
                     request.set_proxy(proxies[k], 'http')
                 response = urllib.request.urlopen(request, body)
+
+                # Parse the message
                 data = response.fp.read()
                 if data:
                     # Get the message from the response
@@ -106,9 +119,7 @@ def request_www_westernunion_com(prepared_requests, emails, proxies=[]):
                         fp.write(email)
 
             except urllib.error.URLError as e:
-                if not hasattr(e, "code"):
-                    return False
-                raise e
+                logging.exception(e)
 
             except Exception as e:
                 raise e
@@ -122,10 +133,11 @@ def worker():
         if not data:
             break
         requests, emails, proxies = data
-        log.info('{} has: {} requests, {} emails'.format(current_thread().name, len(requests), len(emails)))
+        log.info('{} has: {} headers set, {} emails, {} proxies'.format(
+            current_thread().name, len(requests), len(emails), len(proxies)))
         request_www_westernunion_com(requests, emails, proxies)
+        log.info('{} finished'.format(current_thread().name))
         # workers_data.task_done()
-        # time.sleep(1)
 
 make_requests()
 
