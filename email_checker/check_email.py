@@ -5,7 +5,7 @@ import argparse
 from threading import Thread, Lock, current_thread
 
 from logger import log
-from utils import random_delay
+from utils import random_delay, get_random_proxies_for_session
 from random_requests import RANDOM_REQUESTS
 
 
@@ -22,11 +22,15 @@ lock = Lock()
 def make_requests():
     global workers_data
     emails = open('data/emails.txt','r').readlines()
+    # Get a proxy for each email
+    proxies = get_random_proxies_for_session(len(emails))
+
     emails_per_workers = int(len(emails) / NUMBER_OF_WORKERS) + bool(len(emails) % NUMBER_OF_WORKERS)
     headers_per_workers = int(len(RANDOM_REQUESTS) / NUMBER_OF_WORKERS) + bool(len(RANDOM_REQUESTS) % NUMBER_OF_WORKERS)
 
     worker_headers = []
     worker_emails = []
+    worker_proxies = []
 
     # Distribute header sets and emails equally between the workers
     for i in range(NUMBER_OF_WORKERS):
@@ -38,11 +42,12 @@ def make_requests():
         start_e = i * emails_per_workers
         end_e = start_e + emails_per_workers
         worker_emails = emails[start_e:end_e]
+        worker_proxies = proxies[start_e:end_e]
 
-        workers_data.put([worker_headers, worker_emails])
+        workers_data.put([worker_headers, worker_emails, worker_proxies])
 
 
-def request_www_westernunion_com(prepared_requests, emails):
+def request_www_westernunion_com(prepared_requests, emails, proxies=[]):
     worker_name = current_thread().name
     emails_per_request = int(len(emails) / len(prepared_requests)) + bool(len(emails) % len(prepared_requests))
 
@@ -50,7 +55,7 @@ def request_www_westernunion_com(prepared_requests, emails):
         subset_start = idx * emails_per_request
         subset_end = subset_start + emails_per_request 
 
-        for email in emails[subset_start:subset_end]:
+        for k, email in enumerate(emails[subset_start:subset_end]):
             try:
                 request, session_id = prepared_request
                 
@@ -66,8 +71,10 @@ def request_www_westernunion_com(prepared_requests, emails):
                 }).encode()
 
 
-                random_delay(4, 6)
+                random_delay(1, 2)
 
+                if proxies:
+                    request.set_proxy(proxies[k], 'http')
                 response = urllib.request.urlopen(request, body)
                 data = response.fp.read()
                 if data:
@@ -114,9 +121,9 @@ def worker():
             data = workers_data.get()
         if not data:
             break
-        requests, emails = data
+        requests, emails, proxies = data
         log.info('{} has: {} requests, {} emails'.format(current_thread().name, len(requests), len(emails)))
-        request_www_westernunion_com(requests, emails)
+        request_www_westernunion_com(requests, emails, proxies)
         # workers_data.task_done()
         # time.sleep(1)
 
