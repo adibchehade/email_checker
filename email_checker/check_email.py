@@ -1,6 +1,7 @@
 import json
 import queue
 import urllib
+import random
 import logging
 import argparse
 from threading import Thread, Lock, current_thread
@@ -52,6 +53,7 @@ def make_requests():
         start_e = i * emails_per_workers
         end_e = start_e + emails_per_workers
         worker_emails = emails[start_e:end_e]
+        random.shuffle(worker_emails)
         worker_proxies = proxies[start_e:end_e]
 
         workers_data.put([worker_headers, worker_emails, worker_proxies])
